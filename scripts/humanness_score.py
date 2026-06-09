@@ -83,10 +83,15 @@ WORD_TEMPERATURE_BUCKETS = {
 
 
 def strip_markdown(text: str) -> str:
+    text = re.sub(r"\A---\s*\n.*?\n---\s*\n", " ", text, flags=re.DOTALL)
+    text = re.sub(r"<!--.*?-->", " ", text, flags=re.DOTALL)
     text = re.sub(r"```.*?```", " ", text, flags=re.DOTALL)
     text = re.sub(r"^#{1,6}\s+.*$", "", text, flags=re.MULTILINE)
     text = re.sub(r"!\[[^\]]*\]\([^)]+\)", " ", text)
     text = re.sub(r"\[[^\]]+\]\([^)]+\)", " ", text)
+    text = re.sub(r"^:::\w+(?:\s+\w+)?\s*$", " ", text, flags=re.MULTILINE)
+    text = re.sub(r"^:::\s*$", " ", text, flags=re.MULTILINE)
+    text = re.sub(r"^\*图\s*\d+：.*?\*$", " ", text, flags=re.MULTILINE)
     return text.strip()
 
 
@@ -134,18 +139,38 @@ def check_sentence_length_variance(text: str) -> tuple[bool, str]:
 
 def check_paragraph_length_variance(text: str) -> tuple[bool, str]:
     paragraphs = [para.strip() for para in re.split(r"\n\s*\n", text) if para.strip()]
-    paragraphs = [para for para in paragraphs if not para.startswith("#")]
+    paragraphs = [
+        para for para in paragraphs
+        if not (
+            para.startswith("#")
+            or para.startswith("---")
+            or para.startswith(":::")
+            or para.startswith("<!--")
+            or para.startswith("![")
+            or para.startswith("*图 ")
+            or para.startswith("|")
+        )
+    ]
     if len(paragraphs) < 3:
         return True, "段落太少，不强制检查"
 
+    long_paragraph_count = sum(1 for para in paragraphs if len(para) >= 40)
+    if long_paragraph_count < 3:
+        return True, "长正文段落太少，不强制检查"
+
     consecutive_similar = 0
+    comparable_pairs = 0
     for current, nxt in zip(paragraphs, paragraphs[1:]):
+        if len(current) < 40 or len(nxt) < 40:
+            continue
+        comparable_pairs += 1
         if abs(len(current) - len(nxt)) <= 20:
             consecutive_similar += 1
 
-    if consecutive_similar <= 1:
-        return True, f"相近长度连续段落 {consecutive_similar} 组"
-    return False, f"相近长度连续段落 {consecutive_similar} 组，节奏偏平"
+    allowed = max(1, comparable_pairs // 4)
+    if consecutive_similar <= allowed:
+        return True, f"相近长度长正文段落 {consecutive_similar} 组，阈值 {allowed}"
+    return False, f"相近长度长正文段落 {consecutive_similar} 组，阈值 {allowed}，节奏偏平"
 
 
 def check_word_temperature_mix(text: str) -> tuple[bool, str]:

@@ -45,6 +45,11 @@ def normalize_image_src(src: str) -> str:
     return normalized
 
 
+def resolve_article_file(article_dir: Path, src: str) -> Path:
+    normalized = src.replace("\\", "/").lstrip("./")
+    return article_dir.joinpath(*PurePosixPath(normalized).parts)
+
+
 def run_json_command(command: list[str]) -> tuple[object | None, str | None]:
     try:
         completed = subprocess.run(
@@ -203,7 +208,7 @@ def main() -> int:
 
         missing_images = []
         for ref in local_images:
-            candidate = article_dir / ref.replace("/", "\\")
+            candidate = resolve_article_file(article_dir, ref)
             if not candidate.exists():
                 missing_images.append(ref)
         if missing_images:
@@ -223,7 +228,7 @@ def main() -> int:
         add_check(checks, "layout_diversity", "fail", "missing article or metadata, cannot check layout diversity")
 
     cover_image = str(metadata.get("cover_image") or "assets/cover-wide.jpg").strip() or "assets/cover-wide.jpg"
-    cover_path = article_dir / cover_image.replace("/", "\\")
+    cover_path = resolve_article_file(article_dir, cover_image)
     cover_square_path = article_dir / "assets" / "cover-square.jpg"
     add_check(checks, "cover_image", "pass" if cover_path.exists() else "fail", f"cover image: {cover_path}")
     add_check(
