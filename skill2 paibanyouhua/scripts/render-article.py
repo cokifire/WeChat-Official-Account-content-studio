@@ -21,6 +21,58 @@ from layout_strategy import build_layout_plan, write_layout_plan  # noqa: E402
 from theme import load_theme  # noqa: E402
 
 
+def hex_to_rgb(value: str) -> tuple[int, int, int] | None:
+    raw = value.strip()
+    if not raw.startswith('#') or len(raw) != 7:
+        return None
+    try:
+        return int(raw[1:3], 16), int(raw[3:5], 16), int(raw[5:7], 16)
+    except ValueError:
+        return None
+
+
+def relative_luminance(rgb: tuple[int, int, int]) -> float:
+    channels = []
+    for channel in rgb:
+        value = channel / 255
+        channels.append(value / 12.92 if value <= 0.03928 else ((value + 0.055) / 1.055) ** 2.4)
+    return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2]
+
+
+def is_dark_hex(value: str) -> bool:
+    rgb = hex_to_rgb(value)
+    return bool(rgb and relative_luminance(rgb) < 0.45)
+
+
+def shell_tokens_for_theme(theme) -> dict[str, str]:
+    colors = getattr(theme, 'colors', {}) or {}
+    background = str(colors.get('background') or '#f5f7fb')
+    if is_dark_hex(background):
+        return {
+            'SHELL_OUTER_BG': background,
+            'SHELL_CARD_BG': str(colors.get('code_bg') or colors.get('quote_bg') or background),
+            'SHELL_CARD_BORDER': 'rgba(148,163,184,0.24)',
+            'SHELL_SHADOW': '0 12px 32px rgba(0,0,0,0.24)',
+            'SHELL_TITLE_COLOR': str(colors.get('text') or '#f8fafc'),
+            'SHELL_DIGEST_COLOR': str(colors.get('text_light') or colors.get('text') or '#cbd5e1'),
+        }
+    return {
+        'SHELL_OUTER_BG': '#f5f7fb',
+        'SHELL_CARD_BG': '#ffffff',
+        'SHELL_CARD_BORDER': 'rgba(74,124,155,0.08)',
+        'SHELL_SHADOW': '0 8px 28px rgba(58,65,80,0.06)',
+        'SHELL_TITLE_COLOR': '#24384d',
+        'SHELL_DIGEST_COLOR': '#5f6f80',
+    }
+
+
+def apply_shell_tokens(shell: str, theme) -> str:
+    rendered = shell
+    for key, value in shell_tokens_for_theme(theme).items():
+        rendered = rendered.replace(f'{{{{{key}}}}}', value)
+    return rendered
+
+
 def load_style_theme(default: str = 'professional-clean') -> str:
     style_path = REPO_ROOT / 'style.yaml'
     if not style_path.exists():
@@ -114,7 +166,7 @@ def main() -> int:
     publish_body = rewrite_image_sources(result.html, use_placeholders=True)
     preview_body = rewrite_image_sources(result.html, use_placeholders=False)
 
-    shell = template_path.read_text(encoding='utf-8')
+    shell = apply_shell_tokens(template_path.read_text(encoding='utf-8'), theme)
     rendered_publish_html = (
         shell.replace('{{TITLE}}', title)
         .replace('{{DIGEST}}', digest)

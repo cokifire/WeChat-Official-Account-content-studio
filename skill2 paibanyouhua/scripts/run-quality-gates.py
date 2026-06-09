@@ -97,6 +97,65 @@ def add_check(checks: list[dict], name: str, status: str, detail: str, *, data: 
     checks.append(make_check(name, status, detail, data=data))
 
 
+def hex_to_rgb(value: str) -> tuple[int, int, int] | None:
+    raw = value.strip()
+    if not raw.startswith("#") or len(raw) not in {4, 7}:
+        return None
+    if len(raw) == 4:
+        raw = "#" + "".join(item * 2 for item in raw[1:])
+    try:
+        return int(raw[1:3], 16), int(raw[3:5], 16), int(raw[5:7], 16)
+    except ValueError:
+        return None
+
+
+def relative_luminance(rgb: tuple[int, int, int]) -> float:
+    values = []
+    for channel in rgb:
+        value = channel / 255
+        values.append(value / 12.92 if value <= 0.03928 else ((value + 0.055) / 1.055) ** 2.4)
+    return 0.2126 * values[0] + 0.7152 * values[1] + 0.0722 * values[2]
+
+
+def contrast_ratio(foreground: str, background: str) -> float | None:
+    fg = hex_to_rgb(foreground)
+    bg = hex_to_rgb(background)
+    if fg is None or bg is None:
+        return None
+    fg_lum = relative_luminance(fg)
+    bg_lum = relative_luminance(bg)
+    lighter = max(fg_lum, bg_lum)
+    darker = min(fg_lum, bg_lum)
+    return (lighter + 0.05) / (darker + 0.05)
+
+
+def html_readability_check(html: str) -> tuple[str, str, dict]:
+    hex_pattern = r"#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?"
+    backgrounds = re.findall(rf"background(?:-color)?\s*:\s*({hex_pattern})", html)
+    card_background = backgrounds[1] if len(backgrounds) > 1 else (backgrounds[0] if backgrounds else "#ffffff")
+    paragraph_colors = re.findall(rf"<p\b[^>]*style=\"[^\"]*color\s*:\s*({hex_pattern})", html)
+
+    failures = []
+    for color in sorted(set(paragraph_colors)):
+        ratio = contrast_ratio(color, card_background)
+        if ratio is not None and ratio < 4.5:
+            failures.append({"color": color, "background": card_background, "contrast": round(ratio, 2)})
+
+    if failures:
+        return (
+            "fail",
+            "main paragraph text has insufficient contrast against template shell background",
+            {"card_background": card_background, "failures": failures},
+        )
+    if not paragraph_colors:
+        return "fail", "no styled paragraph text found for readability contrast check", {"card_background": card_background}
+    return (
+        "pass",
+        f"paragraph contrast ok against template shell background {card_background}",
+        {"card_background": card_background, "paragraph_colors": sorted(set(paragraph_colors))},
+    )
+
+
 def summarize(checks: list[dict]) -> dict:
     summary = {
         "pass": sum(1 for item in checks if item["status"] == "pass"),
@@ -237,6 +296,12 @@ def main() -> int:
         "pass" if cover_square_path.exists() else "fail",
         f"square cover image: {cover_square_path}",
     )
+
+    if html:
+        status, detail, data = html_readability_check(html)
+        add_check(checks, "theme_shell_readability", status, detail, data=data)
+    else:
+        add_check(checks, "theme_shell_readability", "fail", "article-body.template.html is empty or unreadable")
 
     if humanness_path.exists():
         try:

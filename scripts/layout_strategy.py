@@ -399,9 +399,15 @@ def build_layout_plan(
     recent = recent_layout_records(exclude_dir=article_dir)
     style = load_yaml(SKILL_ROOT / "style.yaml")
     mode, fallback_theme = style_theme_policy(style)
+    metadata_theme = str(metadata.get("theme") or "").strip()
+    metadata_mode = str(metadata.get("theme_mode") or "").strip().lower()
 
     if explicit_theme:
         theme = explicit_theme
+        mode = "fixed"
+        family = THEME_TO_FAMILY.get(theme) or choose_family(title, article_markdown, recent)
+    elif metadata_mode == "fixed" and metadata_theme:
+        theme = metadata_theme
         mode = "fixed"
         family = THEME_TO_FAMILY.get(theme) or choose_family(title, article_markdown, recent)
     elif mode == "fixed":
