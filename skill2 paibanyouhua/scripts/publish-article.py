@@ -249,7 +249,18 @@ def publish_article(
         "WEWRITE_REQUIRE_IMAGE_CONFIG": "0",
     }
     run_step([sys.executable, str(render_script), "--article-dir", str(article_dir)], extra_env=step_env)
-    run_step([sys.executable, str(quality_script), "--article-dir", str(article_dir), "--strict"], extra_env=step_env)
+    run_step(
+        [
+            sys.executable,
+            str(quality_script),
+            "--article-dir",
+            str(article_dir),
+            "--target",
+            "publish",
+            "--strict",
+        ],
+        extra_env=step_env,
+    )
 
     generated_dir = article_dir / "generated"
     meta_path = article_dir / "draft-metadata.json"
@@ -277,6 +288,7 @@ def publish_article(
         .replace("{{SOURCE_URL}}", source_url)
     )
     assert_preflight(article_dir, html, allow_native_lists=allow_native_lists)
+    assert_clean_payload(title, digest, html)
 
     config, config_source_path = load_config(str(publish_config_path))
     wechat_cfg = config.get("wechat", {}) if isinstance(config, dict) else {}

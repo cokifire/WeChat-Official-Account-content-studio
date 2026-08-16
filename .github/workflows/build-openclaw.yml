@@ -6,10 +6,13 @@ on:
     branches: [main]
     paths:
       - 'SKILL.md'
+      - 'agents/**'
       - 'references/**'
       - 'scripts/**'
       - 'toolkit/**'
       - 'personas/**'
+      - 'skill2 paibanyouhua/scripts/**'
+      - 'skill2 paibanyouhua/templates/**'
       - 'requirements.txt'
       - '*.example.yaml'
 

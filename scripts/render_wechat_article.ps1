@@ -97,7 +97,7 @@ spec = importlib.util.spec_from_file_location("run_quality_gates", script)
 module = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(module)
-sys.argv = [script, "--article-dir", article_dir, "--strict"]
+sys.argv = [script, "--article-dir", article_dir, "--target", "preview", "--strict"]
 raise SystemExit(module.main())
 '@
 

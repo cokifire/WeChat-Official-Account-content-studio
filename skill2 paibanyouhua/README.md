@@ -1,4 +1,4 @@
-# gzhskill
+# 公众号模板工作流
 
 这个目录现在是一套可复用的公众号发稿工作流。
 
@@ -20,12 +20,17 @@ cd E:\vscode\gzhskill
 
 脚本会自动创建：
 
+- `brief.yaml`
+- `claims.yaml`
+- `sources.yaml`
+- `draft.md`
 - `article.md`
 - `article-body.template.html`
 - `draft-metadata.json`
 - `assets\`
 - `generated\`
 - `generated\image-prompts.md`
+- `generated\review-report.json`
 
 如果标题里包含 Windows 不允许的字符，脚本会自动替换成 `-`，避免建目录失败。
 
@@ -47,7 +52,28 @@ cd E:\vscode\gzhskill
 
 加 `-Fix` 时，会自动补齐能安全自动修的内容。
 
-### 3. 发布到公众号草稿箱
+### 3. 渲染并检查本地预览
+
+```powershell
+cd E:\vscode\gzhskill
+python .\scripts\render-article.py --article-dir ".\你的文章标题"
+python .\scripts\run-quality-gates.py --article-dir ".\你的文章标题" --target preview --strict
+```
+
+Preview 检查不要求微信密钥、封面或图片 API。它只判断本轮正文、引用图片、HTML、编码和
+主题可读性是否足以生成本地预览。
+
+### 4. 明确授权后发布到公众号草稿箱
+
+先检查 Publish readiness，并执行不产生微信副作用的干跑：
+
+```powershell
+cd E:\vscode\gzhskill
+python .\scripts\run-quality-gates.py --article-dir ".\你的文章标题" --target publish --strict
+.\scripts\publish-article.ps1 -ArticleDir ".\你的文章标题" -DryRun
+```
+
+只有用户本轮明确要求发布、Publish readiness 为 `ready`，且干跑通过时，才执行：
 
 ```powershell
 cd E:\vscode\gzhskill
@@ -60,7 +86,8 @@ cd E:\vscode\gzhskill
 .\scripts\publish-article.ps1 -ArticleDir ".\你的文章标题" -Config ".\.config\md2wechat\config.yaml"
 ```
 
-默认约定：只要文章内容、配图和元数据已经准备完成，且你没有明确说“先别发”或“只生成不发布”，就默认继续推送到公众号草稿箱。
+默认约定：写作、完整制作、本地预览和“检查能不能发”都不授权发布。配置存在、历史上发过、
+或目录里已有 `media_id` 也不算本轮授权。
 
 发布脚本现在会先做预检，并把结果写到该文章目录下的 `generated\preflight-report.json`。
 
@@ -72,9 +99,13 @@ cd E:\vscode\gzhskill
 
 ## 单篇文章目录说明
 
-- `article.md`：原文、整理稿或我改写后的正文
+- `brief.yaml`：目标读者、问题、核心判断、反方和边界
+- `claims.yaml` / `sources.yaml`：主张类型、证据状态与原始来源
+- `draft.md`：未经编辑通过的初稿
+- `article.md`：通过编辑门槛后的成稿
+- `generated\review-report.json`：五项编辑判断与 `publishable` 状态
 - `article-body.template.html`：最终发到公众号的 HTML 模板
-- `draft-metadata.json`：标题、作者、摘要、原文链接、封面路径、评论开关
+- `draft-metadata.json`：标题、摘要、编辑状态、封面路径、主题与评论开关
 - `assets\`：封面图和正文配图
 - `generated\`：发布输出、提示词、预检报告等生成文件
 

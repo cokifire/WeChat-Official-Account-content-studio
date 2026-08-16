@@ -1,6 +1,8 @@
 param(
     [Parameter(Mandatory = $true)]
     [string]$ArticleDir,
+    [ValidateSet('Preview', 'Publish')]
+    [string]$Target = 'Preview',
     [switch]$Strict
 )
 
@@ -52,7 +54,7 @@ if (-not (Test-Path -LiteralPath $scriptPath)) {
     throw "Quality gate script not found: $scriptPath"
 }
 
-$args = @($scriptPath, '--article-dir', $resolvedArticleDir, '--strict')
+$args = @($scriptPath, '--article-dir', $resolvedArticleDir, '--target', $Target.ToLowerInvariant(), '--strict')
 
 $env:WEWRITE_REQUIRE_IMAGE_CONFIG = '0'
 & $python @args
