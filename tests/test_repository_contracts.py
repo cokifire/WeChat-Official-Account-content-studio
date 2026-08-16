@@ -84,6 +84,23 @@ class SkillContractTests(unittest.TestCase):
         self.assertIn("不少于 200 个正文", skill)
         self.assertLess(readme.index("只生成脚手架"), readme.index("渲染并检查本地预览"))
 
+    def test_public_readme_uses_professional_product_language(self):
+        readme = read("README.md")
+
+        self.assertIn("## 核心设计与能力边界", readme)
+        for phrase in (
+            "这版解决了什么",
+            "换皮",
+            "黑盒流水线",
+            "| 你说 | 默认结果 | 不会做 |",
+            "冒充当前目标",
+            "硬塞",
+            "凑图",
+            "盲跑",
+            "看起来丰富",
+        ):
+            self.assertNotIn(phrase, readme)
+
 
 class ContentReadinessTests(unittest.TestCase):
     def setUp(self):
