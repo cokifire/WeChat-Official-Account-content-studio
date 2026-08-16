@@ -72,6 +72,18 @@ class SkillContractTests(unittest.TestCase):
         self.assertIn("[ValidateSet('Preview', 'Publish')]", read("scripts/check_wechat_article.ps1"))
         self.assertIn('"publish"', read("skill2 paibanyouhua/scripts/publish-article.py"))
 
+    def test_documented_commands_are_cross_platform_and_ordered(self):
+        readme = read("README.md")
+        skill = read("SKILL.md")
+        documented = readme + skill
+
+        self.assertNotIn("powershell -ExecutionPolicy", documented)
+        self.assertIn("pwsh -NoProfile -ExecutionPolicy Bypass", readme)
+        self.assertIn("pwsh -NoProfile -ExecutionPolicy Bypass", skill)
+        self.assertIn("正文字符数至少 200", readme)
+        self.assertIn("不少于 200 个正文", skill)
+        self.assertLess(readme.index("只生成脚手架"), readme.index("渲染并检查本地预览"))
+
 
 class ContentReadinessTests(unittest.TestCase):
     def setUp(self):

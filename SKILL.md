@@ -13,7 +13,8 @@ description: |
 把判断交给 Agent，把可重复检查交给脚本。默认交付一篇有来源、经过编辑判断且可本地预览的
 成稿；图片生成和草稿箱发布始终是独立动作。
 
-`{skill_dir}` 指本 `SKILL.md` 所在目录，`{article_dir}` 指单篇文章目录。
+`{skill_dir}` 指本 `SKILL.md` 所在目录，`{article_dir}` 指单篇文章目录。运行 `.ps1` 入口时，
+macOS/Linux 使用 PowerShell 7 的 `pwsh`，Windows 使用 `pwsh.exe`；下面统一写作 `pwsh`。
 
 ## 运行边界
 
@@ -47,8 +48,11 @@ description: |
 每篇文章使用 `{skill_dir}/output/<工作标题>/`，通过下面的命令创建：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File {skill_dir}/scripts/new_wechat_article.ps1 -Title "<工作标题>" -Author "<作者>"
+pwsh -NoProfile -ExecutionPolicy Bypass -File {skill_dir}/scripts/new_wechat_article.ps1 -Title "<工作标题>" -Author "<作者>"
 ```
+
+该命令只创建脚手架，不得立即渲染占位内容。先完成内容主链和编辑复审，并把不少于 200 个正文
+字符的成稿写入 `article.md`，再执行本地渲染。
 
 目录内各文件职责固定：
 
@@ -137,6 +141,7 @@ personas/<style.yaml 的 writing_persona>.yaml
 
 - 没有编造个人材料或未支持的核心事实。
 - 五项平均分不低于 4，单项不低于 3。
+- `article.md` 正文字符数不少于 200。
 - `generated/review-report.json` 的 `decision=pass`、`publishable=true`。
 - `draft-metadata.json` 的 `editorial.publishable=true` 与报告一致。
 
@@ -158,8 +163,8 @@ personas/<style.yaml 的 writing_persona>.yaml
 读取 `references/template-workflow.md` 后执行：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File {skill_dir}/scripts/render_wechat_article.ps1 -ArticleDir "{article_dir}"
-powershell -ExecutionPolicy Bypass -File {skill_dir}/scripts/check_wechat_article.ps1 -ArticleDir "{article_dir}" -Target Preview
+pwsh -NoProfile -ExecutionPolicy Bypass -File {skill_dir}/scripts/render_wechat_article.ps1 -ArticleDir "{article_dir}"
+pwsh -NoProfile -ExecutionPolicy Bypass -File {skill_dir}/scripts/check_wechat_article.ps1 -ArticleDir "{article_dir}" -Target Preview
 ```
 
 `Preview` readiness 只检查本地预览所需内容；缺微信密钥、远程生图配置或封面不能冒充预览
@@ -170,8 +175,8 @@ blocker。生成的 `preview.html` 必须来自本轮成功渲染，不能把旧
 用户本轮明确要求草稿箱发布时，先做不产生外部副作用的检查：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File {skill_dir}/scripts/check_wechat_article.ps1 -ArticleDir "{article_dir}" -Target Publish
-powershell -ExecutionPolicy Bypass -File {skill_dir}/scripts/publish_wechat_article.ps1 -ArticleDir "{article_dir}" -DryRun
+pwsh -NoProfile -ExecutionPolicy Bypass -File {skill_dir}/scripts/check_wechat_article.ps1 -ArticleDir "{article_dir}" -Target Publish
+pwsh -NoProfile -ExecutionPolicy Bypass -File {skill_dir}/scripts/publish_wechat_article.ps1 -ArticleDir "{article_dir}" -DryRun
 ```
 
 只有 `Publish` readiness 为 `ready`，且 `fail=0 / warn=0 / skip=0` 时，才执行不带 `-DryRun`

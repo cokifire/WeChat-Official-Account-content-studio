@@ -97,22 +97,28 @@ output/<工作标题>/
 纯文字文章也不需要为了清零硬塞内文图；但发布必须通过审稿、摘要、双封面、引用图片、微信
 配置、结构、编码、对比度和预检。
 
+下面的入口脚本需要 PowerShell 7。macOS/Linux 使用 `pwsh`，Windows 使用 `pwsh.exe`；只有仍在
+使用 Windows PowerShell 5.1 时才改用 `powershell.exe`。
+
 ```powershell
-# 创建文章目录
-powershell -ExecutionPolicy Bypass -File scripts/new_wechat_article.ps1 -Title "文章标题"
+# 创建文章目录（只生成脚手架）
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/new_wechat_article.ps1 -Title "文章标题"
+
+# 先填写 brief/claims/sources 和 draft，完成审稿后再写入 article.md
+# article.md 正文字符数至少 200，不能直接渲染刚创建的占位内容
 
 # 渲染并检查本地预览
-powershell -ExecutionPolicy Bypass -File scripts/render_wechat_article.ps1 -ArticleDir "文章标题"
-powershell -ExecutionPolicy Bypass -File scripts/check_wechat_article.ps1 -ArticleDir "文章标题" -Target Preview
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/render_wechat_article.ps1 -ArticleDir "文章标题"
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/check_wechat_article.ps1 -ArticleDir "文章标题" -Target Preview
 
 # 只检查发布就绪状态
-powershell -ExecutionPolicy Bypass -File scripts/check_wechat_article.ps1 -ArticleDir "文章标题" -Target Publish
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/check_wechat_article.ps1 -ArticleDir "文章标题" -Target Publish
 
 # 无外部副作用的发布干跑
-powershell -ExecutionPolicy Bypass -File scripts/publish_wechat_article.ps1 -ArticleDir "文章标题" -DryRun
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/publish_wechat_article.ps1 -ArticleDir "文章标题" -DryRun
 
 # 用户明确授权后创建或更新草稿
-powershell -ExecutionPolicy Bypass -File scripts/publish_wechat_article.ps1 -ArticleDir "文章标题"
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/publish_wechat_article.ps1 -ArticleDir "文章标题"
 ```
 
 ## 安装
@@ -141,7 +147,7 @@ git clone --depth 1 https://github.com/wengzige/WeChat-Official-Account-content-
 ```
 
 macOS/Linux 使用 `.venv/bin/python`；Windows 使用 `.venv\Scripts\python.exe`。项目脚本会按平台
-解析虚拟环境，不依赖生产环境安装构建工具。
+解析虚拟环境；上述 `.ps1` 入口还需要 PowerShell 7 的 `pwsh` 命令。
 
 ## 配置
 
