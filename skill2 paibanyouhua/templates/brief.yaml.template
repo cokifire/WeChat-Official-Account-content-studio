@@ -1,0 +1,23 @@
+version: 1
+title: "__TITLE__"
+audience:
+  who: ""
+  context: ""
+  question: ""
+goal:
+  takeaway: ""
+  action: ""
+thesis:
+  statement: ""
+  novelty: ""
+  boundary: ""
+  counterpoint: ""
+personal_materials:
+  available: false
+  items: []
+framework: ""
+sections: []
+constraints:
+  desired_length: "1200-2500 字"
+  must_include: []
+  must_avoid: []

@@ -1,0 +1,4 @@
+interface:
+  display_name: "WeWrite 公众号内容工作室"
+  short_description: "从热点选题、证据核验到编辑审稿、本地预览和公众号草稿箱发布"
+  default_prompt: "Use $wewrite to create a sourced, reviewed WeChat Official Account article and preview it locally."

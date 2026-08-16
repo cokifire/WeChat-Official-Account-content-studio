@@ -1,8 +1,10 @@
 {
+  "workflow_version": 2,
   "title": "__TITLE__",
   "author": "__AUTHOR__",
   "digest": "",
   "content_source_url": "__SOURCE_URL__",
+  "render_source": "article.md",
   "cover_image": "assets/cover-wide.jpg",
   "theme": "",
   "theme_mode": "auto",
@@ -10,6 +12,19 @@
   "layout_variant": "",
   "module_pattern": "",
   "suggested_module_pattern": "",
+  "content_contract": {
+    "brief": "brief.yaml",
+    "claims": "claims.yaml",
+    "sources": "sources.yaml",
+    "draft": "draft.md",
+    "article": "article.md"
+  },
+  "editorial": {
+    "decision": "needs_review",
+    "publishable": false,
+    "pass_number": 0,
+    "review_report": "generated/review-report.json"
+  },
   "media_id": null,
   "need_open_comment": 1,
   "only_fans_can_comment": 0

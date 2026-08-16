@@ -87,6 +87,22 @@ $tokens = @{
 
 $files = @(
     @{
+        Template = (Join-Path $templateRoot 'brief.yaml.template')
+        Output = (Join-Path $articleDir 'brief.yaml')
+    },
+    @{
+        Template = (Join-Path $templateRoot 'claims.yaml.template')
+        Output = (Join-Path $articleDir 'claims.yaml')
+    },
+    @{
+        Template = (Join-Path $templateRoot 'sources.yaml.template')
+        Output = (Join-Path $articleDir 'sources.yaml')
+    },
+    @{
+        Template = (Join-Path $templateRoot 'draft.md.template')
+        Output = (Join-Path $articleDir 'draft.md')
+    },
+    @{
         Template = (Join-Path $templateRoot 'article.md.template')
         Output = (Join-Path $articleDir 'article.md')
     },
@@ -101,6 +117,10 @@ $files = @(
     @{
         Template = (Join-Path $templateRoot 'image-prompts.md.template')
         Output = (Join-Path (Join-Path $articleDir 'generated') 'image-prompts.md')
+    },
+    @{
+        Template = (Join-Path $templateRoot 'review-report.json.template')
+        Output = (Join-Path (Join-Path $articleDir 'generated') 'review-report.json')
     }
 )
 
@@ -113,6 +133,11 @@ foreach ($file in $files) {
     article_dir = $articleDir
     folder_name = $folderName
     article_file = (Join-Path $articleDir 'article.md')
+    draft_file = (Join-Path $articleDir 'draft.md')
+    brief_file = (Join-Path $articleDir 'brief.yaml')
+    claims_file = (Join-Path $articleDir 'claims.yaml')
+    sources_file = (Join-Path $articleDir 'sources.yaml')
+    review_report = (Join-Path (Join-Path $articleDir 'generated') 'review-report.json')
     html_template = (Join-Path $articleDir 'article-body.template.html')
     metadata_file = (Join-Path $articleDir 'draft-metadata.json')
     image_prompt_file = (Join-Path (Join-Path $articleDir 'generated') 'image-prompts.md')

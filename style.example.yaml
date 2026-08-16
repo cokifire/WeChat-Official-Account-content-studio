@@ -22,7 +22,7 @@ word_count: "1500-2500"
 # 影响选题偏好和框架推荐
 content_style: "干货"
 
-# 写作人格（决定文章语感和 AI 检测通过率）
+# 写作人格（决定文章语气、节奏与判断呈现方式）
 # 可选：midnight-friend / industry-observer / sharp-journalist / warm-editor / cold-analyst
 # 详见 personas/ 目录
 writing_persona: "midnight-friend"

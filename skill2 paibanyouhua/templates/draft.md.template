@@ -1,0 +1,10 @@
+---
+title: __TITLE__
+author: __AUTHOR__
+digest:
+---
+
+# __TITLE__
+
+在这里写未审稿初稿。先完成 `brief.yaml`、`claims.yaml` 和 `sources.yaml`；审稿通过后再把终稿
+写入 `article.md`，并同步 `generated/review-report.json` 与 `draft-metadata.json`。

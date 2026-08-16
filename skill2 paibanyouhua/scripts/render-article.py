@@ -124,15 +124,12 @@ def main() -> int:
     if not article_dir.exists():
         raise FileNotFoundError(f'article folder not found: {article_dir}')
 
-    article_path = article_dir / 'article.md'
     meta_path = article_dir / 'draft-metadata.json'
     template_path = REPO_ROOT / 'skill2 paibanyouhua' / 'templates' / 'article-body.template.html.template'
     html_output_path = article_dir / 'article-body.template.html'
     preview_output_path = article_dir / 'preview.html'
     generated_dir = article_dir / 'generated'
 
-    if not article_path.exists():
-        raise FileNotFoundError(f'article.md not found: {article_path}')
     if not meta_path.exists():
         raise FileNotFoundError(f'draft-metadata.json not found: {meta_path}')
     if not template_path.exists():
@@ -141,6 +138,14 @@ def main() -> int:
     generated_dir.mkdir(parents=True, exist_ok=True)
 
     metadata = json.loads(meta_path.read_text(encoding='utf-8'))
+    render_source = str(metadata.get('render_source') or 'article.md').replace('\\', '/').lstrip('./')
+    article_path = (article_dir / render_source).resolve()
+    try:
+        article_path.relative_to(article_dir)
+    except ValueError as exc:
+        raise ValueError(f'render source escapes article folder: {render_source}') from exc
+    if not article_path.exists():
+        raise FileNotFoundError(f'render source not found: {article_path}')
     article_markdown = article_path.read_text(encoding='utf-8')
     layout_plan = build_layout_plan(
         article_dir=article_dir,
@@ -184,6 +189,7 @@ def main() -> int:
         'author': author,
         'digest': digest,
         'content_source_url': content_source_url,
+        'render_source': render_source,
         'cover_image': cover_image,
         'need_open_comment': need_open_comment,
         'only_fans_can_comment': only_fans_can_comment,
@@ -205,6 +211,7 @@ def main() -> int:
 
     print(json.dumps({
         'article_dir': str(article_dir),
+        'article_source': str(article_path),
         'title': title,
         'digest': digest,
         'theme': theme_name,
