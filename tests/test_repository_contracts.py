@@ -101,6 +101,17 @@ class SkillContractTests(unittest.TestCase):
         ):
             self.assertNotIn(phrase, readme)
 
+    def test_public_readme_has_reproducible_skill_installation(self):
+        readme = read("README.md")
+
+        self.assertIn("$skill-installer", readme)
+        self.assertIn("Skill 位于仓库根目录，安装名称为 wewrite", readme)
+        self.assertIn("scripts/setup_skill.py", readme)
+        self.assertIn("Python 3.10 或更高版本", readme)
+        self.assertIn("PowerShell 7", readme)
+        self.assertIn("写作和本地预览不需要微信密钥或图片 API", readme)
+        self.assertIn("仅在需要发布到微信草稿箱或调用图片服务时创建", readme)
+
 
 class ContentReadinessTests(unittest.TestCase):
     def setUp(self):

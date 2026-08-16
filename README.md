@@ -18,6 +18,96 @@
                                                    └─ 明确授权后创建微信草稿
 ```
 
+## 安装
+
+### 环境要求
+
+- Git
+- Python 3.10 或更高版本
+- [PowerShell 7](https://learn.microsoft.com/powershell/scripting/install/installing-powershell)（命令名为 `pwsh`）
+
+初始化脚本会自动选择已安装的兼容 Python，创建项目专用 `.venv`，安装并验证依赖；不会创建、
+读取或覆盖任何账号密钥。
+
+### 在 Codex 中安装（推荐）
+
+将下面整段指令发送给 Codex：
+
+```text
+使用 $skill-installer 安装以下 GitHub 仓库中的 Skill：
+https://github.com/wengzige/WeChat-Official-Account-content-studio
+
+Skill 位于仓库根目录，安装名称为 wewrite。
+安装完成后，在安装目录运行 python3 scripts/setup_skill.py，并报告环境检查结果。
+```
+
+仓库根目录包含 `SKILL.md`，并通过 `agents/openai.yaml` 提供 Codex 界面元数据。安装后如未立即
+显示，可重启 Codex 再调用 `$wewrite`。
+
+### 手动安装 Codex Skill
+
+macOS / Linux：
+
+```bash
+SKILL_DIR="${CODEX_HOME:-$HOME/.codex}/skills/wewrite"
+mkdir -p "$(dirname "$SKILL_DIR")"
+git clone --depth 1 https://github.com/wengzige/WeChat-Official-Account-content-studio.git "$SKILL_DIR"
+python3 "$SKILL_DIR/scripts/setup_skill.py"
+```
+
+Windows PowerShell 7：
+
+```powershell
+$codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" }
+$skillDir = Join-Path $codexHome "skills/wewrite"
+New-Item -ItemType Directory -Force (Split-Path $skillDir) | Out-Null
+git clone --depth 1 https://github.com/wengzige/WeChat-Official-Account-content-studio.git $skillDir
+python (Join-Path $skillDir "scripts/setup_skill.py")
+```
+
+### Claude Code / OpenClaw
+
+把同一仓库克隆到对应 skills 目录，然后运行相同的初始化脚本：
+
+```bash
+# Claude Code
+git clone --depth 1 https://github.com/wengzige/WeChat-Official-Account-content-studio.git ~/.claude/skills/wewrite
+python3 ~/.claude/skills/wewrite/scripts/setup_skill.py
+
+# OpenClaw
+git clone --depth 1 https://github.com/wengzige/WeChat-Official-Account-content-studio.git ~/.openclaw/skills/wewrite
+python3 ~/.openclaw/skills/wewrite/scripts/setup_skill.py
+```
+
+### 安装后开始使用
+
+在 Codex 中完成首次风格设置：
+
+```text
+$wewrite 重新设置风格
+```
+
+完成后即可使用 `$wewrite 写一篇公众号文章`。写作和本地预览不需要微信密钥或图片 API。
+
+## 配置
+
+`style.yaml` 由首次风格设置生成，也可以复制示例后手动修改：
+
+```bash
+cp style.example.yaml style.yaml
+```
+
+- `style.yaml`：账号、读者、主题、人格和禁用表达。
+- `config.yaml`：仅在需要发布到微信草稿箱或调用图片服务时创建：
+
+  ```bash
+  cp config.example.yaml config.yaml
+  ```
+
+- 未创建 `config.yaml` 时仍可正常写作与本地预览。
+- 缺图片 API 仍可输出完整图片提示词。
+- `config.yaml`、`style.yaml`、历史、语料、文章输出和 `.venv/` 默认不进入 Git。
+
 ## 核心设计与能力边界
 
 - **内容契约前置**：每篇文章保存 `brief.yaml`、`claims.yaml`、`sources.yaml`、`draft.md`、
@@ -120,49 +210,6 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/publish_wechat_article.ps1
 # 用户明确授权后创建或更新草稿
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/publish_wechat_article.ps1 -ArticleDir "文章标题"
 ```
-
-## 安装
-
-### Codex
-
-```bash
-git clone --depth 1 https://github.com/wengzige/WeChat-Official-Account-content-studio.git ~/.codex/skills/wewrite
-cd ~/.codex/skills/wewrite
-python3 -m venv .venv
-./.venv/bin/python -m pip install -r requirements.txt
-```
-
-仓库包含 `agents/openai.yaml`，安装到 Codex skills 目录后可直接触发。
-
-### Claude Code / OpenClaw
-
-把同一仓库克隆到对应 skills 目录：
-
-```bash
-# Claude Code
-git clone --depth 1 https://github.com/wengzige/WeChat-Official-Account-content-studio.git ~/.claude/skills/wewrite
-
-# OpenClaw
-git clone --depth 1 https://github.com/wengzige/WeChat-Official-Account-content-studio.git ~/.openclaw/skills/wewrite
-```
-
-macOS/Linux 使用 `.venv/bin/python`；Windows 使用 `.venv\Scripts\python.exe`。项目脚本会按平台
-解析虚拟环境；上述 `.ps1` 入口还需要 PowerShell 7 的 `pwsh` 命令。
-
-## 配置
-
-首次使用可直接让 skill 引导生成 `style.yaml`，也可以复制示例：
-
-```bash
-cp style.example.yaml style.yaml
-cp config.example.yaml config.yaml
-```
-
-- `style.yaml`：账号、读者、主题、人格和禁用表达。
-- `config.yaml`：微信 AppID/Secret 和可选图片服务。
-- 缺 `config.yaml` 仍可写作与本地预览。
-- 缺图片 API 仍可输出完整图片提示词。
-- `config.yaml`、`style.yaml`、历史、语料、文章输出和 `.venv/` 默认不进入 Git。
 
 ## 视觉工作流
 
