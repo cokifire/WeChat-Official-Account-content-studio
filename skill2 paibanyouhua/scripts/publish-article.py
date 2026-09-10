@@ -54,6 +54,7 @@ if str(TOOLKIT_ROOT) not in sys.path:
 import yaml  # noqa: E402
 from publisher import create_draft_from_payload, update_draft  # noqa: E402
 from wechat_api import get_access_token, upload_image, upload_thumb  # noqa: E402
+from wechat_proxy import describe as describe_proxy, proxy_hint  # noqa: E402
 
 
 def write_utf8(path: Path, text: str) -> None:
@@ -317,6 +318,7 @@ def publish_article(
             "cover_image": cover_image,
             "cover_path": str(cover_path),
             "planned_images": planned_images,
+            "wechat_proxy": describe_proxy(),
         }
 
     token = get_access_token(appid, secret)
@@ -394,7 +396,10 @@ def main() -> int:
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0
     except Exception as exc:
-        error = {"success": False, "error": str(exc)}
+        message = str(exc)
+        if "ProxyError" in message or "Cannot connect to proxy" in message:
+            message = f"{message}\n{proxy_hint()}"
+        error = {"success": False, "error": message}
         print(json.dumps(error, ensure_ascii=False, indent=2), file=sys.stderr)
         return 1
 

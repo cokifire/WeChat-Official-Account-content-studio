@@ -7,6 +7,15 @@ wechat:
   secret: "your_appsecret"
   author: ""  # 默认署名（可选）
 
+  # 可选：微信 API 出口代理。家宽只有动态公网 IP 时，公众号 IP 白名单无法固定，
+  # 可让所有 api.weixin.qq.com 请求固定走一台固定 IP 的服务器（如本机 SSH 隧道 +
+  # 服务器上的 tinyproxy），并把该服务器 IP 填入白名单。
+  # proxy: "http://127.0.0.1:8888"
+
+# 也可以写在顶层 network 段（wechat.proxy 优先）
+# network:
+#   proxy: "http://127.0.0.1:8888"
+
 # AI 图片生成
 image:
   # 推荐：OpenAI-compatible image2 / gpt-image-2

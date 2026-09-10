@@ -4,6 +4,11 @@ import requests
 from pathlib import Path
 from dataclasses import dataclass
 
+try:  # toolkit 已在 sys.path 时的常规导入
+    from wechat_proxy import proxy_kwargs
+except ImportError:  # pragma: no cover - 作为包导入时的回退
+    from toolkit.wechat_proxy import proxy_kwargs
+
 # Token cache
 _token_cache: dict = {}
 
@@ -36,6 +41,7 @@ def get_access_token(appid: str, secret: str, force_refresh: bool = False) -> st
             "appid": appid,
             "secret": secret,
         },
+        **proxy_kwargs(),
     )
     data = resp.json()
 
@@ -76,6 +82,7 @@ def upload_image(access_token: str, image_path: str) -> str:
             "https://api.weixin.qq.com/cgi-bin/media/uploadimg",
             params={"access_token": access_token},
             files={"media": (path.name, f, content_type)},
+            **proxy_kwargs(),
         )
 
     data = resp.json()
@@ -103,6 +110,7 @@ def upload_thumb(access_token: str, image_path: str) -> str:
             "https://api.weixin.qq.com/cgi-bin/material/add_material",
             params={"access_token": access_token, "type": "image"},
             files={"media": (path.name, f, content_type)},
+            **proxy_kwargs(),
         )
 
     data = resp.json()

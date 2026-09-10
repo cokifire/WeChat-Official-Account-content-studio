@@ -5,6 +5,7 @@ import argparse
 import json
 import os
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +16,12 @@ from bs4.element import NavigableString, Tag
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+TOOLKIT_ROOT = REPO_ROOT / "toolkit"
+
+if str(TOOLKIT_ROOT) not in sys.path:
+    sys.path.insert(0, str(TOOLKIT_ROOT))
+
+from wechat_proxy import proxy_kwargs  # noqa: E402
 
 
 def config_paths(explicit_config: str = "") -> list[Path]:
@@ -54,6 +61,7 @@ def get_access_token(appid: str, secret: str) -> str:
             "secret": secret,
         },
         timeout=30,
+        **proxy_kwargs(),
     )
     resp.raise_for_status()
     data = resp.json()
@@ -68,6 +76,7 @@ def fetch_draft(access_token: str, media_id: str) -> dict[str, Any]:
         f"https://api.weixin.qq.com/cgi-bin/draft/get?access_token={access_token}",
         json={"media_id": media_id},
         timeout=30,
+        **proxy_kwargs(),
     )
     resp.raise_for_status()
     data = resp.json()

@@ -5,6 +5,11 @@ from typing import Optional
 
 import requests
 
+try:  # toolkit 已在 sys.path 时的常规导入
+    from wechat_proxy import proxy_kwargs
+except ImportError:  # pragma: no cover - 作为包导入时的回退
+    from toolkit.wechat_proxy import proxy_kwargs
+
 
 @dataclass
 class DraftResult:
@@ -76,6 +81,7 @@ def _post_json(
         params={"access_token": access_token},
         data=json.dumps(body, ensure_ascii=False).encode("utf-8"),
         headers={"Content-Type": "application/json; charset=utf-8"},
+        **proxy_kwargs(),
     )
 
     data = resp.json()

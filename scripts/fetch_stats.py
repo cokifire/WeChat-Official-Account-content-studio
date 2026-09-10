@@ -24,6 +24,12 @@ import requests
 import yaml
 
 SKILL_DIR = Path(__file__).parent.parent
+TOOLKIT_DIR = SKILL_DIR / "toolkit"
+
+if str(TOOLKIT_DIR) not in sys.path:
+    sys.path.insert(0, str(TOOLKIT_DIR))
+
+from wechat_proxy import proxy_kwargs  # noqa: E402
 
 
 def _config_paths(explicit_config: str = "") -> list[Path]:
@@ -56,6 +62,7 @@ def _get_access_token(appid: str, secret: str) -> str:
     resp = requests.get(
         "https://api.weixin.qq.com/cgi-bin/token",
         params={"grant_type": "client_credential", "appid": appid, "secret": secret},
+        **proxy_kwargs(),
     )
     data = resp.json()
     if "access_token" not in data:
@@ -73,6 +80,7 @@ def fetch_article_summary(token: str, date: str) -> list[dict]:
         "https://api.weixin.qq.com/datacube/getarticlesummary",
         params={"access_token": token},
         json={"begin_date": date, "end_date": date},
+        **proxy_kwargs(),
     )
     data = resp.json()
     if "list" not in data:
@@ -95,6 +103,7 @@ def fetch_article_total(token: str, date: str) -> list[dict]:
         "https://api.weixin.qq.com/datacube/getarticletotal",
         params={"access_token": token},
         json={"begin_date": date, "end_date": date},
+        **proxy_kwargs(),
     )
     data = resp.json()
     if "list" not in data:

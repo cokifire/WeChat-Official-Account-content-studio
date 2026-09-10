@@ -60,3 +60,5 @@ docs/
 # IDE
 .vscode/
 .idea/
+.codebuddy/
+codebuddy.md
